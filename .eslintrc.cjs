@@ -27,12 +27,13 @@ module.exports = {
     // React
     {
       files: ["**/*.{js,jsx,ts,tsx}"],
-      plugins: ["react", "jsx-a11y"],
+      plugins: ["react", "jsx-a11y", "tailwindcss"],
       extends: [
         "plugin:react/recommended",
         "plugin:react/jsx-runtime",
         "plugin:react-hooks/recommended",
         "plugin:jsx-a11y/recommended",
+        "plugin:tailwindcss/recommended"
       ],
       settings: {
         react: {
