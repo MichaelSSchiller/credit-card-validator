@@ -17,14 +17,12 @@ export const action = async ({
 }: ActionFunctionArgs): Promise<TypedResponse<ActionData>> => {
   const formData = await request.formData();
   const values = Object.fromEntries(formData);
-  const value = validateFormvalues(values);
-  // deleteCreditCard(creditCardId);
-  return json({ isValid: value });
+  const isValid = validateLuhnChecksum(values);
+  return json({ isValid });
 };
 
 const Index = () => {
   const data = useActionData<typeof action>();
-  console.log(data);
 
   return (
     <div className="flex h-screen">
@@ -80,36 +78,33 @@ const Index = () => {
 
 export default Index;
 
-/*
-Luhn checksum algorithm https://en.wikipedia.org/wiki/Luhn_algorithm
-1. If the number already contains the check digit, drop that digit to form the "payload". The check digit is most often the last digit.
-2. With the payload, start from the rightmost digit. Moving left, double the value of every second digit (including the rightmost digit).
-3. Sum the values of the resulting digits.
-*/
-
-// NOTE exported for testin purposes
-export const validateFormvalues = (values: {
+// Luhn checksum algorithm https://en.wikipedia.org/wiki/Luhn_algorithm
+const validateLuhnChecksum = (values: {
   [k: string]: FormDataEntryValue;
 }): boolean => {
-  const cardNumber = String(values.cardNumber);
-  const payload = cardNumber.split("").reverse();
-  const checkDigit = payload.splice(0, 1)[0];
-  const digitSum = payload.reduce<number>((acc, num, i) => {
+  if (!values.cardNumber) return false;
+  const [...cardNumberArr] = String(values.cardNumber);
+  const reverse = cardNumberArr.reverse();
+  // 1. Drop the check digit (last digit) of the number to validate.
+  // const droppedCheckDigit = Number(payload.splice(0, 1)[0]);
+  const [droppedCheckDigit, ...payload] = reverse;
+  // 2. Calculate the check digit
+  const calculatedCheckDigit = payload.reduce<number>((acc, num, i) => {
     const number = Number(num);
-    // odd index position just add the number
+    // NOTE odd index position just add the number
     if (i % 2 !== 0) {
       return acc + number;
     }
-    // double the value of every second digit
+    // NOTE double the value of every second digit
     const doubled = number * 2;
-    // Sum the values of the resulting digits.
-    // The sum of the digits of any number equals the remainder of the division of that number by nine (step 3 above)
+    // NOTE Sum the values of the resulting digits. (The sum of the digits of any number equals the remainder of the division of that number by nine)
     if (doubled > 9) {
       return acc + (doubled - 9);
     }
     return acc + doubled;
   }, 0);
-  // Compare your result with the original check digit. If both numbers match, the result is valid
-  const isValid = 10 - (digitSum % 10) === Number(checkDigit);
+  // 3. Compare your result with the original check digit. If both numbers match, the result is valid
+  const isValid =
+    10 - (calculatedCheckDigit % 10) === Number(droppedCheckDigit);
   return isValid;
 };
