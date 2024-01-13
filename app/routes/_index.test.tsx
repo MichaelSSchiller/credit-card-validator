@@ -3,7 +3,7 @@ import { action } from "./_index";
 // All valid credit card numbers
 const valid1 = "4539677908016808";
 const valid2 = "5535766768751439";
-const valid3 = "371612019985236";
+const valid3 = "371612019985236"; //15 digits
 const valid4 = "6011144340682905";
 const valid5 = "4539404967869666";
 
@@ -43,7 +43,7 @@ describe("Path Action", () => {
 
       const response = await action({ request, params: {}, context: {} });
       const data = await response.json();
-      expect(data).toEqual({ isValid });
+      expect(data).toEqual({ cardNumber, isValid });
     },
   );
 });
