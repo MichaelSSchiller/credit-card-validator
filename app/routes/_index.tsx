@@ -9,7 +9,8 @@ import { json } from "@remix-run/node";
 export const meta: MetaFunction = () => [{ title: "Credit Card validator" }];
 
 interface ActionData {
-  isValid?: boolean;
+  isValid: boolean;
+  cardNumber: string;
 }
 
 export const action = async ({
@@ -17,8 +18,8 @@ export const action = async ({
 }: ActionFunctionArgs): Promise<TypedResponse<ActionData>> => {
   const formData = await request.formData();
   const values = Object.fromEntries(formData);
-  const isValid = validateLuhnChecksum(values);
-  return json({ isValid });
+  const data = validateLuhnChecksum(values);
+  return json(data);
 };
 
 const Index = () => {
@@ -60,7 +61,9 @@ const Index = () => {
             className="relative rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700"
             role="alert"
           >
-            <span className="block sm:inline">Credit Card is invalid</span>
+            <span className="block sm:inline">
+              Credit Card # {data.cardNumber} is invalid
+            </span>
           </div>
         )}
         {data?.isValid === true && (
@@ -68,7 +71,9 @@ const Index = () => {
             className="relative rounded border border-teal-500 bg-teal-100 px-4 py-3 text-teal-900"
             role="alert"
           >
-            <span className="block sm:inline">Credit Card is valid</span>
+            <span className="block sm:inline">
+              Credit Card # {data.cardNumber} is valid
+            </span>
           </div>
         )}
       </div>
@@ -81,15 +86,15 @@ export default Index;
 // Luhn checksum algorithm https://en.wikipedia.org/wiki/Luhn_algorithm
 const validateLuhnChecksum = (values: {
   [k: string]: FormDataEntryValue;
-}): boolean => {
-  if (!values.cardNumber) return false;
+}): { isValid: boolean; cardNumber: string } => {
+  if (!values.cardNumber) return { isValid: false, cardNumber: "" };
   const [...cardNumberArr] = String(values.cardNumber);
   const reverse = cardNumberArr.reverse();
   // 1. Drop the check digit (last digit) of the number to validate.
   // const droppedCheckDigit = Number(payload.splice(0, 1)[0]);
   const [droppedCheckDigit, ...payload] = reverse;
   // 2. Calculate the check digit
-  const calculatedCheckDigit = payload.reduce<number>((acc, num, i) => {
+  const digitSum = payload.reduce<number>((acc, num, i) => {
     const number = Number(num);
     // NOTE odd index position just add the number
     if (i % 2 !== 0) {
@@ -103,8 +108,7 @@ const validateLuhnChecksum = (values: {
     }
     return acc + doubled;
   }, 0);
-  // 3. Compare your result with the original check digit. If both numbers match, the result is valid
-  const isValid =
-    10 - (calculatedCheckDigit % 10) === Number(droppedCheckDigit);
-  return isValid;
+  // 3. Add the diitSum to the droppedCheckDigit and check if it is divisible by 10
+  const isValid = (digitSum + Number(droppedCheckDigit)) % 10 === 0;
+  return { isValid, cardNumber: String(values.cardNumber) };
 };
