@@ -13,8 +13,9 @@ const invalid2 = "5795593392134643";
 const invalid3 = "375796084459914";
 const invalid4 = "6011127961777935";
 const invalid5 = "5382019772883854";
+const invalid6 = "";
 
-const batch: [string, boolean][] = [
+const validityTests: [string, boolean][] = [
   [valid1, true],
   [valid2, true],
   [valid3, true],
@@ -25,10 +26,11 @@ const batch: [string, boolean][] = [
   [invalid3, false],
   [invalid4, false],
   [invalid5, false],
+  [invalid6, false],
 ];
 
 describe("Path Action", () => {
-  test.each(batch)(
+  test.each(validityTests)(
     "card number %p should validate to %p",
     async (cardNumber, isValid) => {
       const body = new URLSearchParams({
