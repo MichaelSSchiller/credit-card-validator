@@ -18,8 +18,8 @@ export const action = async ({
 }: ActionFunctionArgs): Promise<TypedResponse<ActionData>> => {
   const formData = await request.formData();
   const values = Object.fromEntries(formData);
-  const isValid = validateLuhnChecksum(values);
-  return json(isValid);
+  const data = validateLuhnChecksum(values);
+  return json(data);
 };
 
 const Index = () => {
