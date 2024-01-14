@@ -1,9 +1,9 @@
+import { Form, useActionData } from "@remix-run/react";
 import type {
   ActionFunctionArgs,
   MetaFunction,
   TypedResponse,
 } from "@remix-run/node";
-import { Form, useActionData } from "@remix-run/react";
 import { json } from "@remix-run/node";
 
 export const meta: MetaFunction = () => [{ title: "Credit Card validator" }];
@@ -17,14 +17,15 @@ export const action = async ({
   request,
 }: ActionFunctionArgs): Promise<TypedResponse<ActionData>> => {
   const formData = await request.formData();
-  const values = Object.fromEntries(formData);
-  const data = validateLuhnChecksum(values);
-  return json(data);
+  const cardNumberFormValue = formData.get("cardNumber");
+  if (!cardNumberFormValue) return json({ isValid: false, cardNumber: "" });
+  const cardNumber = String(cardNumberFormValue);
+  const isValid = validateLuhnChecksum(cardNumber);
+  return json({ isValid, cardNumber });
 };
 
 const Index = () => {
-  const data = useActionData<typeof action>();
-
+  const { isValid, cardNumber } = useActionData<typeof action>() ?? {};
   return (
     <div className="flex h-screen">
       <div className="mx-auto w-1/3">
@@ -56,23 +57,17 @@ const Index = () => {
             </label>
           </div>
         </Form>
-        {data?.isValid === false && (
-          <div
-            className="relative rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700"
-            role="alert"
-          >
+        {isValid === false && (
+          <div className="relative rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700">
             <span className="block sm:inline">
-              Credit Card # {data.cardNumber} is invalid
+              Credit Card # {cardNumber} is invalid
             </span>
           </div>
         )}
-        {data?.isValid === true && (
-          <div
-            className="relative rounded border border-teal-500 bg-teal-100 px-4 py-3 text-teal-900"
-            role="alert"
-          >
+        {isValid === true && (
+          <div className="relative rounded border border-teal-500 bg-teal-100 px-4 py-3 text-teal-900">
             <span className="block sm:inline">
-              Credit Card # {data.cardNumber} is valid
+              Credit Card # {cardNumber} is valid
             </span>
           </div>
         )}
@@ -84,24 +79,22 @@ const Index = () => {
 export default Index;
 
 // Luhn checksum algorithm https://en.wikipedia.org/wiki/Luhn_algorithm
-const validateLuhnChecksum = (values: {
-  [k: string]: FormDataEntryValue;
-}): { isValid: boolean; cardNumber: string } => {
-  if (!values.cardNumber) return { isValid: false, cardNumber: "" };
-  const [...cardNumberArr] = String(values.cardNumber);
+// NOTE exported for testing
+export const validateLuhnChecksum = (cardNumber: string): boolean => {
+  if (!cardNumber) return false;
+  const [...cardNumberArr] = cardNumber;
   const reverse = cardNumberArr.reverse();
   // 1. Drop the check digit (last digit) of the number to validate.
-  // const droppedCheckDigit = Number(payload.splice(0, 1)[0]);
   const [droppedCheckDigit, ...payload] = reverse;
-  // 2. Calculate the check digit
+  // 2. Calculate the digitSum
   const digitSum = payload.reduce<number>((acc, num, i) => {
-    const number = Number(num);
-    // NOTE odd index position just add the number
+    const digit = Number(num);
+    // NOTE odd index position add the number
     if (i % 2 !== 0) {
-      return acc + number;
+      return acc + digit;
     }
-    // NOTE double the value of every second digit
-    const doubled = number * 2;
+    // NOTE even index position double the value
+    const doubled = digit * 2;
     // NOTE Sum the values of the resulting digits. (The sum of the digits of any number equals the remainder of the division of that number by nine)
     if (doubled > 9) {
       return acc + (doubled - 9);
@@ -109,6 +102,5 @@ const validateLuhnChecksum = (values: {
     return acc + doubled;
   }, 0);
   // 3. Add the diitSum to the droppedCheckDigit and check if it is divisible by 10
-  const isValid = (digitSum + Number(droppedCheckDigit)) % 10 === 0;
-  return { isValid, cardNumber: String(values.cardNumber) };
+  return (digitSum + Number(droppedCheckDigit)) % 10 === 0;
 };

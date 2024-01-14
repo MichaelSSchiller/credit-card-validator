@@ -1,4 +1,4 @@
-import { action } from "./_index";
+import { action, validateLuhnChecksum } from "./_index";
 
 // All valid credit card numbers
 const valid1 = "4539677908016808";
@@ -29,21 +29,37 @@ const validityTests: [string, boolean][] = [
   [invalid6, false],
 ];
 
-describe("Path Action", () => {
-  test.each(validityTests)(
-    "card number %p should validate to %p",
-    async (cardNumber, isValid) => {
-      const body = new URLSearchParams({
-        cardNumber,
-      });
-      const request = new Request("http://app.com/path", {
-        method: "POST",
-        body,
-      });
+describe("Test valiadtion", () => {
+  describe("validateLuhnChecksum", () => {
+    test.each(validityTests)(
+      "card number %p should validate to %p",
+      async (cardNumber, isValid) => {
+        const data = validateLuhnChecksum(cardNumber);
+        expect(data).toEqual(isValid);
+      },
+    );
+  });
 
-      const response = await action({ request, params: {}, context: {} });
-      const data = await response.json();
-      expect(data).toEqual({ cardNumber, isValid });
-    },
-  );
+  describe("Action function should return data", () => {
+    test.each([
+      [valid1, true],
+      [invalid1, false],
+      [invalid6, false],
+    ])(
+      "Action should return {cardNumber: %p, isValid: %p}",
+      async (cardNumber, isValid) => {
+        const body = new URLSearchParams({
+          cardNumber,
+        });
+        const request = new Request("http://app.com/path", {
+          method: "POST",
+          body,
+        });
+
+        const response = await action({ request, params: {}, context: {} });
+        const data = await response.json();
+        expect(data).toEqual({ cardNumber, isValid });
+      },
+    );
+  });
 });
