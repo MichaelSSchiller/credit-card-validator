@@ -8,8 +8,9 @@ Do the following commands
 Tech Stack
 1. React
 2. Typescript
-3. Remix (used for ease of setting up node server)
-4. Tailwind
+3. Node
+4. Remix (used for ease of setting up node server)
+5. Tailwind
 
 TODO
 1. Improve UI
