@@ -5,7 +5,6 @@ Do the following commands
 - npm run dev (to start)
 - npm run test (to run test scripts)
 
-
 Tech Stack
 1. React
 2. Typescript
@@ -14,13 +13,12 @@ Tech Stack
 
 TODO
 1. Improve UI
-    1. Allow credit card input to take different amounts of characters to allow for all cc types
+    1. Allow credit card input to take different amounts of characters to allow for all card types
     2. Autoformat input to add a space every 4 characters to improve readability
-    3. Include inputs for Name, Exp, CSC
+    3. Make CreditCard input and Alerts their own components
     4. Improve Accessibility
 2. Move validation code into its own file
-3. External API call to validate all info on the credit card
-
+3. Add unit tests for UI
 
 <img width="875" alt="Screenshot 2024-01-13 at 9 26 09 AM" src="https://github.com/MichaelSSchiller/credit-card-validator/assets/38842472/6102c0be-6c8d-43d6-9fcb-d7b0937d0ad9">
 <img width="922" alt="Screenshot 2024-01-13 at 9 26 29 AM" src="https://github.com/MichaelSSchiller/credit-card-validator/assets/38842472/1e2c1407-9989-44d3-a375-9497c8825c4f">
