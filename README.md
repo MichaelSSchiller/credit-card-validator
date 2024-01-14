@@ -9,7 +9,7 @@ Tech Stack
 1. React
 2. Typescript
 3. Node
-4. Remix (used for ease of setting up node server)
+4. Remix
 5. Tailwind
 
 TODO
